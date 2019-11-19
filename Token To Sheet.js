@@ -212,7 +212,7 @@ on('ready', function(){
                         setAttr(sheet, 'wisdom'+'_mod', Math.floor((scores[4]-10)/2));
                         setAttr(sheet, 'charisma'+'_mod', Math.floor((scores[5]-10)/2));
 
-                        ToPlayer(`**Ability Scores Set for ${sheetName}.**`)
+                        ToPlayer(`**Ability Scores Set for ${sheetName}.**`, true)
                         break;
                     } else {
                         Error(`Input for ability scores not correct. There must be 6 integers, but you entered '${value}'.`, 8)
@@ -222,7 +222,7 @@ on('ready', function(){
                     isNumber(value)
                     if (!notNumber && value.split(' ').length == 1) {
                         setAttr(sheet, 'npc_ac', value)
-                        ToPlayer(`**AC Set for ${sheetName}.**`)
+                        ToPlayer(`**AC Set for ${sheetName}.**`, true)
                         break;
                     } else {
                         Error(`Input for AC not correct. There must be 1 integer, but you entered '${value}'.`, 9)
@@ -251,28 +251,28 @@ on('ready', function(){
                         setAttr(sheet, `npc_${valAbbr}_save_flag`, 2)
                         setAttr(sheet, `npc_${valAbbr}_save`, profBonus)
                         setAttr(sheet, `npc_${valAbbr}_save_base`, profBonus)
-                        ToPlayer(`**${value} saving throw proficiency added to ${sheetName}.**`)
+                        ToPlayer(`**${value} saving throw proficiency added to ${sheetName}.**`, true)
                     }
                 case 'hp formula':
                     setAttr(sheet, 'npc_hpformula', value)
-                    ToPlayer(`**HP Formula Set for ${sheetName}.**`)
+                    ToPlayer(`**HP Formula Set for ${sheetName}.**`, true)
                     break;
                 case 'speed':
                     setAttr(sheet, 'npc_speed', value)
-                    ToPlayer(`**Speed Set for ${sheetName}.**`)
+                    ToPlayer(`**Speed Set for ${sheetName}.**`, true)
                     break;
                 case 'type':
                     let size = value.substring(0, value.indexOf(' '));
                     let type = value.substring(value.indexOf(' ')+1);
 
                     setAttr(sheet, 'npc_type', size+' '+type)
-                    ToPlayer(`**Size & Type Set for ${sheetName}.**`)
+                    ToPlayer(`**Size & Type Set for ${sheetName}.**`, true)
                     break;
                 case 'cr':
                     isNumber(value)
                     if (!notNumber && value > 0) {
                         setAttr(sheet, 'npc_challenge', value)
-                        ToPlayer(`**Challenge Rating Set for ${sheetName}.**`)
+                        ToPlayer(`**Challenge Rating Set for ${sheetName}.**`, true)
                         break;
                     } else {
                         Error(`Input for CR not correct. There must be 1 integer that has a value above 0, but you entered '${value}'.`, 10)
@@ -280,11 +280,11 @@ on('ready', function(){
                     }
                 case 'add resistance':
                     addAttr(sheet, 'npc_resistances', value)
-                    ToPlayer(`**Resistance Added for ${sheetName}.**`)
+                    ToPlayer(`**Resistance Added for ${sheetName}.**`, true)
                     break;
                 case 'add immunity':
                     addAttr(sheet, 'npc_immunities', value)
-                    ToPlayer(`**Immunity Added for ${sheetName}.**`)
+                    ToPlayer(`**Immunity Added for ${sheetName}.**`, true)
                     break;
                 case 'add skill':
                     CheckCR();
@@ -328,7 +328,7 @@ on('ready', function(){
                         setAttr(sheet, `npc_${value.replace(' ', '_').toLowerCase()}_flag`, 2)
                         setAttr(sheet, `npc_${value.replace(' ', '_').toLowerCase()}`, profBonus)
                         setAttr(sheet, `npc_${value.replace(' ', '_').toLowerCase()}_base`, profBonus)
-                        ToPlayer(`**Proficiency in ${value} added to ${sheetName}.**`)
+                        ToPlayer(`**Proficiency in ${value} added to ${sheetName}.**`, true)
                     }
                 default:
                     Error(`Command not understood: '${msg.content}'.`, 7)
@@ -403,7 +403,7 @@ on('ready', function(){
                                     current: '0'
                                 })
                                 token.set(`bar${bar}_link`, newAttr.id)
-                                ToPlayer(`**Attribute '${attr}' was not found, so it was created and set to 0.**`)
+                                ToPlayer(`**Attribute '${attr}' was not found, so it was created and set to 0.**`, true)
                             } else {
                                 Error(`Found multiple attributes named ${attr}.`, 18)
                                 return;
@@ -446,7 +446,7 @@ on('ready', function(){
                             }
                             result += +z;
                         }
-                        ToPlayer(`**Token Bar ${TTS_hpBar} set to ${result}/${result} (${x} d ${y} ${z}).**`)
+                        ToPlayer(`**Token Bar ${TTS_hpBar} set to ${result}/${result} (${x} d ${y} ${z}).**`, true)
                         return result;
                     }
                 default: 
@@ -483,12 +483,16 @@ on('ready', function(){
             }
         }
 
-        function ToPlayer(message){
-            sendChat(TTS_name, TTS_toChat(playerName)+message);
+        function ToPlayer(message, success){
+            if (!success){
+                sendChat(TTS_name, TTS_toChat(playerName)+message);
+            } else {
+                sendChat(TTS_name, TTS_toChat(playerName)+'<br><div style="background-color: #5cd65c; color: Black; padding: 5px; border-radius: 10px;">'+message+'</div>');
+            }
         }
 
         function Error(error, code){
-            sendChat(TTS_error, TTS_error_toChat(playerName)+'**'+error+'**'+EC(code));
+            sendChat(TTS_error, TTS_error_toChat(playerName)+'<br><div style="background-color: #ff6666; color: Black; padding: 5px; border-radius: 10px;">'+'**'+error+'**'+EC(code)+'<br></div>');
             log(TTS_log+error+EC(code));
         }
 
