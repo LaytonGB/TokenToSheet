@@ -346,8 +346,8 @@ on('ready', function(){
 
             if (!sheet) {Error(`Token must represent a sheet.`); return;}
 
-            let command = msg.content.substring(msg.content.indexOf('--')+2, (msg.content.indexOf('--', msg.content.indexOf('--')+2)-1));
-            let value = msg.content.substring((msg.content.indexOf('--', msg.content.indexOf('--')+2)+2));
+            let command = msg.content.match(/\-\-/g).length > 1 ? msg.content.substring(msg.content.indexOf('--')+2, (msg.content.indexOf('--', msg.content.indexOf('--')+2)-1)) : msg.content.substring(msg.content.indexOf('--')+2);
+            let value = msg.content.match(/\-\-/g).length > 1 ? msg.content.substring((msg.content.indexOf('--', msg.content.indexOf('--')+2)+2)) : '';
 
             switch (command){
                 case '1':
@@ -401,30 +401,29 @@ on('ready', function(){
                     }
                     break;
                 case 'roll hp':
-                    if (sheet.get('npc_hpformula')){
-                        let newHP = Roll(getAttrByName(sheet.id, 'npc_hpformula'));
+                    let formula = getAttrByName(sheet.id, 'npc_hpformula');
+                    if (formula){
+                        let newHP = Roll(formula);
                         token.set(`bar${hpBar}_value`, newHP)
                         token.set(`bar${hpBar}_max`, newHP)
-                        ToPlayer(`**Token Bar ${hpBar} set to ${newHP}/${newHP}.**`)
+                        return;
                     } else {
                         Error(`No HP formula attribute found.`, 21)
                         return;
                     }
                     function Roll(formula){
                         let x = formula.substring(0, formula.indexOf('d'));
-                        let y = formula.indexOf(/\-+/) != -1 ? formula.substring(formula.indexOf('d')+1, formula.indexOf(/\-+/)) : formula.substring(formula.indexOf('d')+1);
-                        let z = formula.indexOf(/\-+/) != -1 ? formula.substring(formula.indexOf(/\-+/)+1) : '';
+                        let y = formula.search(/[+-]/) != -1 ? formula.substring(formula.indexOf('d')+1, formula.search(/[+-]/)) : formula.substring(formula.indexOf('d')+1);
+                        let z = formula.search(/[+-]/) != -1 ? formula.substring(formula.search(/[+-]/)) : '';
                         let result = 0;
 
                         if (isNaN(x)){
-                            Error(`Expected number, recieved ${x}.`, 22);
+                            Error(`Expected number, recieved '${x}' from input '${formula}'.`, 22);
                             return;
-                        }
-                        if (isNaN(y)){
-                            Error(`Expected number, recieved ${y}.`, 23);
+                        } else if (isNaN(y)){
+                            Error(`Expected number, recieved '${y}' from input '${formula}'.`, 23);
                             return;
-                        }
-                        if (isNaN(z)){
+                        } else if (isNaN(z)){
                             for (let i = 0; i < x; i++){
                                 result += +randomInteger(y);
                             }
@@ -434,6 +433,7 @@ on('ready', function(){
                             }
                             result += +z;
                         }
+                        ToPlayer(`**Token Bar ${hpBar} set to ${result}/${result} (${x} d ${y} ${z}).**`)
                         return result;
                     }
                 default: 
