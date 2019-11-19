@@ -146,7 +146,7 @@ on('ready', function(){
                     istokenaction: true
                 })
 
-                ToPlayer(`**Character '${sheetName}' created.**`)
+                ToPlayer(`**Character '${sheetName}' created.**`, true)
 
                 TokenMenu(token)
 
@@ -192,7 +192,7 @@ on('ready', function(){
                 if (isNaN(score)){notNumber = true}
             }
 
-            let cr = sheet.get('npc_challenge');
+            let cr = getAttrByName(sheet.id, 'npc_challenge');
             switch (command) {
                 case 'ability scores':
                     let scores = value.split(' ');
