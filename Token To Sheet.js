@@ -446,7 +446,7 @@ on('ready', function(){
                             }
                             result += +z;
                         }
-                        ToPlayer(`**Token Bar ${TTS_hpBar} set to ${result}/${result} (${x} d ${y} ${z}).**`, true)
+                        ToPlayer(`**Token Bar ${TTS_hpBar} set to ${result}/${result} (${x}d${y}${z}).**`, true)
                         return result;
                     }
                 default: 
