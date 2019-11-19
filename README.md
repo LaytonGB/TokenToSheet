@@ -19,6 +19,8 @@ With a token selected, this command will do one of the following:
 - Duplicate the sheet the token represents, naming the new sheet by the token's name.
 - Show an array of buttons in the chat that can modify the current token and its sheet.
 
+<img src="https://raw.githubusercontent.com/LaytonGB/TokenToSheet/master/img/firefox_2019-11-19_11-43-53.png" />
+
 ---
 
 #### Contact Information and Bug Reporting
