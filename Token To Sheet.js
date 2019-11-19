@@ -7,7 +7,7 @@ function TTS_error_toChat (playerName) {return `/w ${playerName} `};
 const TTS_log = TTS_name+': ';
 
 //options
-const hpBar = 3;
+const TTS_hpBar = 3;
 
 on('ready', function(){
     log("Create Sheet from Token is Ready!");
@@ -404,8 +404,8 @@ on('ready', function(){
                     let formula = getAttrByName(sheet.id, 'npc_hpformula');
                     if (formula){
                         let newHP = Roll(formula);
-                        token.set(`bar${hpBar}_value`, newHP)
-                        token.set(`bar${hpBar}_max`, newHP)
+                        token.set(`bar${TTS_hpBar}_value`, newHP)
+                        token.set(`bar${TTS_hpBar}_max`, newHP)
                         return;
                     } else {
                         Error(`No HP formula attribute found.`, 21)
@@ -433,7 +433,7 @@ on('ready', function(){
                             }
                             result += +z;
                         }
-                        ToPlayer(`**Token Bar ${hpBar} set to ${result}/${result} (${x} d ${y} ${z}).**`)
+                        ToPlayer(`**Token Bar ${TTS_hpBar} set to ${result}/${result} (${x} d ${y} ${z}).**`)
                         return result;
                     }
                 default: 
