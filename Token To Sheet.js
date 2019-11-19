@@ -6,6 +6,9 @@ const TTS_error = TTS_name+' ERROR';
 function TTS_error_toChat (playerName) {return `/w ${playerName} `};
 const TTS_log = TTS_name+': ';
 
+//options
+const hpBar = 3;
+
 on('ready', function(){
     log("Create Sheet from Token is Ready!");
 
@@ -40,7 +43,7 @@ on('ready', function(){
                     } else {
                         Error(`Could not find sheet named '${sheetName}'.`, 4)
                     }
-                } else if (msg.selected[0] && !isNaN(msg.content.split(' --')[1])) {
+                } else if (msg.selected[0] && (!isNaN(msg.content.split(' --')[1]) || msg.content.split(' --')[1] == 'roll hp')) {
                     let obj = msg.selected[0];
                     let token = getObj(obj._type, obj._id);
                     if (token.get('represents')){
@@ -164,7 +167,8 @@ on('ready', function(){
             ToPlayer(`&{template:default} {{name=**${tokenName} Token Menu**}}`+
                 `{{[Link Bar1](!tokensheet ${tokenName} --1 --?{Choose Attribute|AC|Temp Hit Points|Passive Perception|Speed})=Bar1 Currently: **${getObj('attribute', token.get('bar1_link')) ? getObj('attribute', token.get('bar1_link')).get('name') : "Unlinked"}**}}`+
                 `{{[Link Bar2](!tokensheet ${tokenName} --2 --?{Choose Attribute|AC|Temp Hit Points|Passive Perception|Speed})=Bar2 Currently: **${getObj('attribute', token.get('bar2_link')) ? getObj('attribute', token.get('bar2_link')).get('name') : "Unlinked"}**}}`+
-                `{{[Link Bar3](!tokensheet ${tokenName} --3 --?{Choose Attribute|AC|Temp Hit Points|Passive Perception|Speed})=Bar3 Currently: **${getObj('attribute', token.get('bar3_link')) ? getObj('attribute', token.get('bar3_link')).get('name') : "Unlinked"}**}}`
+                `{{[Link Bar3](!tokensheet ${tokenName} --3 --?{Choose Attribute|AC|Temp Hit Points|Passive Perception|Speed})=Bar3 Currently: **${getObj('attribute', token.get('bar3_link')) ? getObj('attribute', token.get('bar3_link')).get('name') : "Unlinked"}**}}`+
+                `{{[Roll HP Formula](!tokensheet ${tokenName} --roll hp)=}}`
             )
         }
 
@@ -242,6 +246,7 @@ on('ready', function(){
                     function setSave(value){
                         let valAbbr = value.substring(0,3).toLowerCase();
 
+                        setAttr(sheet, `npc_saving_flag`, 2)
                         setAttr(sheet, `npc_${valAbbr}_save_flag`, 2)
                         setAttr(sheet, `npc_${valAbbr}_save`, profCalc(value.toLowerCase()))
                         setAttr(sheet, `npc_${valAbbr}_save_base`, profCalc(value.toLowerCase()))
@@ -395,6 +400,42 @@ on('ready', function(){
                         }
                     }
                     break;
+                case 'roll hp':
+                    if (sheet.get('npc_hpformula')){
+                        let newHP = Roll(getAttrByName(sheet.id, 'npc_hpformula'));
+                        token.set(`bar${hpBar}_value`, newHP)
+                        token.set(`bar${hpBar}_max`, newHP)
+                        ToPlayer(`**Token Bar ${hpBar} set to ${newHP}/${newHP}.**`)
+                    } else {
+                        Error(`No HP formula attribute found.`, 21)
+                        return;
+                    }
+                    function Roll(formula){
+                        let x = formula.substring(0, formula.indexOf('d'));
+                        let y = formula.indexOf(/\-+/) != -1 ? formula.substring(formula.indexOf('d')+1, formula.indexOf(/\-+/)) : formula.substring(formula.indexOf('d')+1);
+                        let z = formula.indexOf(/\-+/) != -1 ? formula.substring(formula.indexOf(/\-+/)+1) : '';
+                        let result = 0;
+
+                        if (isNaN(x)){
+                            Error(`Expected number, recieved ${x}.`, 22);
+                            return;
+                        }
+                        if (isNaN(y)){
+                            Error(`Expected number, recieved ${y}.`, 23);
+                            return;
+                        }
+                        if (isNaN(z)){
+                            for (let i = 0; i < x; i++){
+                                result += +randomInteger(y);
+                            }
+                        } else {
+                            for (let i = 0; i < x; i++){
+                                result += +randomInteger(y);
+                            }
+                            result += +z;
+                        }
+                        return result;
+                    }
                 default: 
                     Error(`Unknown Error.`, 16)
                     return;
