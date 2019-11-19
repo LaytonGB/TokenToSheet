@@ -27,9 +27,9 @@ on('ready', function(){
     })
 
     on('chat:message', function(msg){
-        if (msg.type == 'api'){
-            if (msg.content.split(' ')[0] == '!tokensheet' && msg.selected && !msg.selected[1] && msg.selected[0]._type === 'graphic' && playerIsGM(msg.playerid)) {
-                var playerName = msg.who.split(' ', 1);
+        if (msg.type == 'api' && msg.content.split(' ')[0] == '!tokensheet'){
+            var playerName = msg.who.substring(0, msg.who.indexOf(' '));
+            if (msg.selected && !msg.selected[1] && msg.selected[0]._type === 'graphic' && playerIsGM(msg.playerid)) {
                 if (msg.content.split(' ').length == 1) {
                     MakeSheet(msg)
                 } else if (msg.content.indexOf('--') == -1) {
@@ -64,11 +64,11 @@ on('ready', function(){
                 } else {
                     Error(`Couldn't interpret command.`, 5)
                 }
-            } else if (playerIsGM(msg.playerid)) {
+            } else if (!playerIsGM(msg.playerid)) {
                 Error(`Only GMs can use this API.`, 0)
-            } else if (msg.selected === undefined) {
+            } else if (!msg.selected) {
                 Error(`A token must be selected.`, 1)
-            } else if (msg.selected[1] !== undefined) {
+            } else if (msg.selected[1]) {
                 Error(`Only one token may be selected at a time.`, 2)
             }
         }
@@ -192,7 +192,7 @@ on('ready', function(){
                 if (isNaN(score)){notNumber = true}
             }
 
-            let cr = parseInt(sheet.get('npc_challenge')) ? parseInt(sheet.get('npc_challenge')) : 1;
+            let cr = sheet.get('npc_challenge');
             switch (command) {
                 case 'ability scores':
                     let scores = value.split(' ');
@@ -229,6 +229,7 @@ on('ready', function(){
                         break;
                     }
                 case 'add save':
+                    CheckCR();
                     switch (value) {
                         case 'Strength':
                         case 'Dexterity':
@@ -245,11 +246,12 @@ on('ready', function(){
                     break;
                     function setSave(value){
                         let valAbbr = value.substring(0,3).toLowerCase();
-
+                        let profBonus = profCalc(value.toLowerCase());
                         setAttr(sheet, `npc_saving_flag`, 2)
                         setAttr(sheet, `npc_${valAbbr}_save_flag`, 2)
-                        setAttr(sheet, `npc_${valAbbr}_save`, profCalc(value.toLowerCase()))
-                        setAttr(sheet, `npc_${valAbbr}_save_base`, profCalc(value.toLowerCase()))
+                        setAttr(sheet, `npc_${valAbbr}_save`, profBonus)
+                        setAttr(sheet, `npc_${valAbbr}_save_base`, profBonus)
+                        ToPlayer(`**${value} saving throw proficiency added to ${sheetName}.**`)
                     }
                 case 'hp formula':
                     setAttr(sheet, 'npc_hpformula', value)
@@ -285,16 +287,15 @@ on('ready', function(){
                     ToPlayer(`**Immunity Added for ${sheetName}.**`)
                     break;
                 case 'add skill':
+                    CheckCR();
                     switch (value) {
                         case 'Athletics':
                             setSkill(value, 'strength')
-                            ToPlayer(`**${value} added for ${sheetName}.**`)
                             break;
                         case 'Acrobatics':
                         case 'Sleight of Hand':
                         case 'Stealth':
                             setSkill(value, 'dexterity')
-                            ToPlayer(`**${value} added for ${sheetName}.**`)
                             break;
                         case 'Arcana':
                         case 'History':
@@ -302,7 +303,6 @@ on('ready', function(){
                         case 'Nature':
                         case 'Religion':
                             setSkill(value, 'intelligence')
-                            ToPlayer(`**${value} added for ${sheetName}.**`)
                             break;
                         case 'Animal Handling':
                         case 'Insight':
@@ -310,14 +310,12 @@ on('ready', function(){
                         case 'Perception':
                         case 'Survival':
                             setSkill(value, 'wisdom')
-                            ToPlayer(`**${value} added for ${sheetName}.**`)
                             break;
                         case 'Deception':
                         case 'Intimidation':
                         case 'Performance':
                         case 'Persuasion':
                             setSkill(value, 'charisma')
-                            ToPlayer(`**${value} added for ${sheetName}.**`)
                             break;
                         default:
                             Error(`Input for Skill not correct. Input must be a skill, but you entered '${value}'.`, 13)
@@ -325,17 +323,32 @@ on('ready', function(){
                     }
                     break;
                     function setSkill(value, attr){
+                        let profBonus = profCalc(attr);
+                        setAttr(sheet, `npc_skills_flag`, 2)
                         setAttr(sheet, `npc_${value.replace(' ', '_').toLowerCase()}_flag`, 2)
-                        setAttr(sheet, `npc_${value.replace(' ', '_').toLowerCase()}`, profCalc(attr))
+                        setAttr(sheet, `npc_${value.replace(' ', '_').toLowerCase()}`, profBonus)
+                        setAttr(sheet, `npc_${value.replace(' ', '_').toLowerCase()}_base`, profBonus)
+                        ToPlayer(`**Proficiency in ${value} added to ${sheetName}.**`)
                     }
                 default:
                     Error(`Command not understood: '${msg.content}'.`, 7)
                     break;
 
+                function CheckCR(){
+                    if (isNaN(cr)) {
+                        Error(`NPC's CR is currently '${cr}' so proficiency calcs shall use 'CR 1' instead.`, 23); 
+                        cr = 1;
+                    } else {
+                        cr = parseInt(cr)
+                    }
+                }
+
                 function profCalc(attr){
                     let attrMod = parseInt(getAttrByName(sheet.id, attr+'_mod')) ? parseInt(getAttrByName(sheet.id, attr+'_mod')) : 0;
                     if (isNaN(getAttrByName(sheet.id, attr+'_mod'))) {Error(`No ${attr} modifier found. Using '0' instead.`, 12)}
-                    return attrMod+Math.floor(cr/4)+2;
+                    let profBonus = attrMod+Math.floor(cr/4)+2;
+                    ToPlayer(`**Using Proficiency Bonus of '+${profBonus}'.** Calculated using sheet CR.`)
+                    return profBonus;
                 }
             }
         }
