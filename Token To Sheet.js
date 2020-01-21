@@ -165,9 +165,9 @@ on('ready', function(){
             let tokenName = token.get('name') ? token.get('name') : "Nameless Token";
         
             ToPlayer(`&{template:default} {{name=**${tokenName} Token Menu**}}`+
-                `{{[Link Bar1](!tokensheet ${tokenName} --1 --?{Choose Attribute|AC|Temp Hit Points|Passive Perception|Speed})=Bar1 Currently: **${getObj('attribute', token.get('bar1_link')) ? getObj('attribute', token.get('bar1_link')).get('name') : "Unlinked"}**}}`+
-                `{{[Link Bar2](!tokensheet ${tokenName} --2 --?{Choose Attribute|AC|Temp Hit Points|Passive Perception|Speed})=Bar2 Currently: **${getObj('attribute', token.get('bar2_link')) ? getObj('attribute', token.get('bar2_link')).get('name') : "Unlinked"}**}}`+
-                `{{[Link Bar3](!tokensheet ${tokenName} --3 --?{Choose Attribute|AC|Temp Hit Points|Passive Perception|Speed})=Bar3 Currently: **${getObj('attribute', token.get('bar3_link')) ? getObj('attribute', token.get('bar3_link')).get('name') : "Unlinked"}**}}`+
+                `{{[Link Bar1](!tokensheet ${tokenName} --1 --?{Choose Attribute|AC|HP|Temp Hit Points|Passive Perception|Speed})=Bar1 Currently: **${getObj('attribute', token.get('bar1_link')) ? getObj('attribute', token.get('bar1_link')).get('name') : "Unlinked"}**}}`+
+                `{{[Link Bar2](!tokensheet ${tokenName} --2 --?{Choose Attribute|AC|HP|Temp Hit Points|Passive Perception|Speed})=Bar2 Currently: **${getObj('attribute', token.get('bar2_link')) ? getObj('attribute', token.get('bar2_link')).get('name') : "Unlinked"}**}}`+
+                `{{[Link Bar3](!tokensheet ${tokenName} --3 --?{Choose Attribute|AC|HP|Temp Hit Points|Passive Perception|Speed})=Bar3 Currently: **${getObj('attribute', token.get('bar3_link')) ? getObj('attribute', token.get('bar3_link')).get('name') : "Unlinked"}**}}`+
                 `{{[Roll HP Formula](!tokensheet ${tokenName} --roll hp)=}}`
             )
         }
@@ -368,7 +368,7 @@ on('ready', function(){
                 case '3': 
                     let bar = command;
                     switch (value){
-                        case 'Hit Points':
+                        case 'HP':
                             LinkBar(bar, 'hp')
                             break;
                         case 'AC':
